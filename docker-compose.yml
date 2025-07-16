@@ -1,0 +1,38 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: frete-laravel-app
+    ports:
+      - "9000:8000"
+    volumes:
+      - ./backend:/var/www
+    working_dir: /var/www
+    user: "${UID}:${GID}"
+    depends_on:
+      - mysql
+    networks:
+      - fretenet
+    command: php -S 0.0.0.0:8000 -t public
+
+  mysql:
+    image: mysql:8
+    container_name: frete-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: frete
+      MYSQL_USER: user
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - fretenet
+
+networks:
+  fretenet:
+
+volumes:
+  dbdata:
