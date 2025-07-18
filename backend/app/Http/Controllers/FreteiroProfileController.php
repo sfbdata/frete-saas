@@ -45,4 +45,29 @@ class FreteiroProfileController extends Controller
             ], 500);
         }
     }
+
+    public function index()
+        {
+            // Retornar os freteiros ativos (se quiser filtrar depois com 'is_ativo')
+            $freteiros = \App\Models\FreteiroProfile::with('user')
+                ->select('id', 'user_id', 'nome_fantasia', 'nome_completo', 'tipo_veiculo', 'cidade_base', 'avaliacao', 'quantidade_avaliacoes', 'foto_perfil')
+                ->paginate(10);
+
+            return response()->json($freteiros);
+        }
+        
+
+    public function show($id)
+        {
+            $freteiro = \App\Models\FreteiroProfile::with('user')->find($id);
+
+            if (!$freteiro) {
+                return response()->json(['erro' => 'Freteiro não encontrado'], 404);
+            }
+
+            return response()->json($freteiro);
+        }
+
+        
+
 }
