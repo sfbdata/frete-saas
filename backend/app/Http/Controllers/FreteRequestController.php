@@ -16,8 +16,8 @@ class FreteRequestController extends Controller
             'destino' => 'required|string',
             'tipo_caminhao' => 'required|string',
             'precisa_ajudante' => 'required|boolean',
-            'tem_escadas' => 'required|boolean',
-            'descricao' => 'nullable|string',
+            'tem_escada' => 'required|boolean',
+            'observacoes' => 'nullable|string',
         ]);
 
         $data['user_id'] = Auth::id();
