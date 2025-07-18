@@ -2,26 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\FreteRequest;
+use App\Models\FreteiroProfile;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FreteRequestController extends Controller
 {
     public function store(Request $request)
     {
-        $fields = $request->validate([
-            'origin'         => 'required|string',
-            'destination'    => 'required|string',
-            'truck_type'     => 'required|string',
-            'needs_helper'   => 'required|boolean',
-            'has_stairs'     => 'required|boolean',
+        $data = $request->validate([
+            'origem' => 'required|string',
+            'destino' => 'required|string',
+            'tipo_caminhao' => 'required|string',
+            'precisa_ajudante' => 'required|boolean',
+            'tem_escadas' => 'required|boolean',
+            'descricao' => 'nullable|string',
         ]);
 
-        $frete = FreteRequest::create($fields);
+        $data['user_id'] = Auth::id();
+
+        $frete = FreteRequest::create($data);
+
+        // (Por enquanto) retornar todos os freteiros cadastrados
+        $freteiros = FreteiroProfile::with('user')->take(10)->get();
 
         return response()->json([
-            'message' => 'Solicitação de frete registrada com sucesso.',
-            'data' => $frete
-        ], 201);
+            'mensagem' => 'Solicitação registrada com sucesso.',
+            'frete' => $frete,
+            'freteiros_disponiveis' => $freteiros
+        ]);
     }
 }
