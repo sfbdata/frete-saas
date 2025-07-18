@@ -9,6 +9,10 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/fretes', [FreteRequestController::class, 'store']);
 Route::post('/fretes/request', [FreteRequestController::class, 'store']);
+Route::get('/freteiros', [FreteiroProfileController::class, 'index']);
+Route::get('/freteiros/{id}', [FreteiroProfileController::class, 'show']);
+
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me',     [AuthController::class, 'me']);
