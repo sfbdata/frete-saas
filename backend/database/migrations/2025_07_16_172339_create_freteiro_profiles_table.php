@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('freteiro_profiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
             $table->string('nome_fantasia')->nullable();
             $table->string('nome_completo');
             $table->string('tipo_veiculo');

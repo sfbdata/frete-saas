@@ -12,11 +12,13 @@ class FreteRequestController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'nome_cliente' => 'required|string|max:255',
+            'whatsapp_cliente' => 'required|string|max:15',
             'origem' => 'required|string',
             'destino' => 'required|string',
             'tipo_caminhao' => 'required|string',
-            'precisa_ajudante' => 'required|boolean',
-            'tem_escada' => 'required|boolean',
+            'precisa_ajudante' => 'nullable|boolean',
+            'tem_escada' => 'nullable|boolean',
             'observacoes' => 'nullable|string',
         ]);
 

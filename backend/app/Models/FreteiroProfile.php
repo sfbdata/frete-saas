@@ -20,4 +20,9 @@ class FreteiroProfile extends Model
         'foto_perfil',
         'foto_caminhao',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

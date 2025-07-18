@@ -13,6 +13,7 @@ return new class extends Migration
     {
     Schema::create('frete_requests', function (Blueprint $table) {
         $table->id();
+        $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // ✅ ID do usuário logado (se houver)
         $table->string('nome_cliente');
         $table->string('whatsapp_cliente');
         $table->string('origem');
@@ -22,8 +23,8 @@ return new class extends Migration
         $table->boolean('tem_escada')->default(false);
         $table->text('observacoes')->nullable();
         $table->timestamps();
-    });
-}
+        });
+    }
 
     /**
      * Reverse the migrations.
