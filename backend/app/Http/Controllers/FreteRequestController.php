@@ -11,7 +11,8 @@ class FreteRequestController extends Controller
 {
     public function store(Request $request)
     {
-        $data = $request->validate([
+        try {
+            $data = $request->validate([
             'nome_cliente' => 'required|string|max:255',
             'whatsapp_cliente' => 'required|string|max:15',
             'origem' => 'required|string',
@@ -34,5 +35,15 @@ class FreteRequestController extends Controller
             'frete' => $frete,
             'freteiros_disponiveis' => $freteiros
         ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+            'erro' => 'Erro ao registrar solicitação: ' . $th->getMessage(),
+            'mensagem' => $th->getMessage(),
+            'arquivo' => $th->getFile(),
+            'linha' => $th->getLine()
+        ], 500);
+        }
+    
+        
     }
 }
