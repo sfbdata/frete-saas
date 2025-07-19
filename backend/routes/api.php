@@ -11,6 +11,8 @@ Route::post('/fretes', [FreteRequestController::class, 'store']);
 Route::post('/fretes/request', [FreteRequestController::class, 'store']);
 Route::get('/freteiros', [FreteiroProfileController::class, 'index']);
 Route::get('/freteiros/{id}', [FreteiroProfileController::class, 'show']);
+Route::post('/fretes/{frete}/contato/{freteiro}', [\App\Http\Controllers\ContatoController::class, 'enviarContato']);
+
 
 
 

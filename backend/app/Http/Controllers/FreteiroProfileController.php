@@ -21,6 +21,7 @@ class FreteiroProfileController extends Controller
 
             $data = $request->validate([
                 'nome_completo' => 'required|string',
+                'whatsapp' => 'required|string|max:15',
                 'tipo_veiculo' => 'required|string',
                 'descricao' => 'nullable|string',
                 'cidade_base' => 'required|string',
@@ -48,38 +49,32 @@ class FreteiroProfileController extends Controller
 
     public function index(Request $request)
         {
-            $query = \App\Models\FreteiroProfile::with('user');
+            $query = FreteiroProfile::with('user');
 
-            // 🔍 Filtros opcionais
-            if ($request->filled('cidade')) {
-                $query->where('cidade_base', 'like', '%' . $request->cidade . '%');
-            }
-
-            if ($request->has('tipo_veiculo')) {
+            // Filtro por tipo de veículo (parcial)
+            if ($request->filled('tipo_veiculo')) {
                 $query->where('tipo_veiculo', 'like', '%' . $request->tipo_veiculo . '%');
             }
 
-
-            if ($request->filled('avaliacao_min')) {
-                $query->where('avaliacao', '>=', floatval($request->avaliacao_min));
+            // Filtro por cidade_base (parcial)
+            if ($request->filled('cidade_base')) {
+                $query->where('cidade_base', 'like', '%' . $request->cidade_base . '%');
             }
 
-            // 🔃 Ordenação
-            if ($request->filled('ordenar_por') && $request->ordenar_por === 'avaliacao') {
-                $query->orderByDesc('avaliacao');
-            } else {
-                $query->orderByDesc('id'); // mais recentes primeiro
+            // Ordenação opcional
+            if ($request->filled('orderBy')) {
+                $orderField = in_array($request->orderBy, ['avaliacao', 'quantidade_avaliacoes']) ? $request->orderBy : 'avaliacao';
+                $orderDir = $request->get('orderDir', 'desc') === 'asc' ? 'asc' : 'desc';
+
+                $query->orderBy($orderField, $orderDir);
             }
 
-            // 📦 Paginação
-            $freteiros = $query->select(
-                'id', 'user_id', 'nome_fantasia', 'nome_completo',
-                'tipo_veiculo', 'cidade_base', 'avaliacao',
-                'quantidade_avaliacoes', 'foto_perfil'
-            )->paginate(10);
+            // Paginação com per_page personalizado (padrão 10)
+            $perPage = $request->get('per_page', 10);
 
-            return response()->json($freteiros);
+            return response()->json($query->paginate($perPage));
         }
+
 
 
 

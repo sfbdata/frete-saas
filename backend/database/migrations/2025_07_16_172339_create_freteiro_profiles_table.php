@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
             $table->string('nome_fantasia')->nullable();
             $table->string('nome_completo');
+            $table->string('whatsapp')->nullable(); // ou required se for obrigatório
             $table->string('tipo_veiculo');
             $table->string('cidade_base');
             $table->text('descricao')->nullable();

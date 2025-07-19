@@ -15,6 +15,7 @@ class FreteiroProfile extends Model
             'tipo_veiculo',
             'descricao',
             'cidade_base',
+            'wahtsapp',
             'avaliacao',
             'quantidade_avaliacoes',
             'foto_perfil',
