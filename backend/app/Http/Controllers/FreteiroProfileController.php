@@ -46,16 +46,42 @@ class FreteiroProfileController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $request)
         {
-            // Retornar os freteiros ativos (se quiser filtrar depois com 'is_ativo')
-            $freteiros = \App\Models\FreteiroProfile::with('user')
-                ->select('id', 'user_id', 'nome_fantasia', 'nome_completo', 'tipo_veiculo', 'cidade_base', 'avaliacao', 'quantidade_avaliacoes', 'foto_perfil')
-                ->paginate(10);
+            $query = \App\Models\FreteiroProfile::with('user');
+
+            // 🔍 Filtros opcionais
+            if ($request->filled('cidade')) {
+                $query->where('cidade_base', 'like', '%' . $request->cidade . '%');
+            }
+
+            if ($request->has('tipo_veiculo')) {
+                $query->where('tipo_veiculo', 'like', '%' . $request->tipo_veiculo . '%');
+            }
+
+
+            if ($request->filled('avaliacao_min')) {
+                $query->where('avaliacao', '>=', floatval($request->avaliacao_min));
+            }
+
+            // 🔃 Ordenação
+            if ($request->filled('ordenar_por') && $request->ordenar_por === 'avaliacao') {
+                $query->orderByDesc('avaliacao');
+            } else {
+                $query->orderByDesc('id'); // mais recentes primeiro
+            }
+
+            // 📦 Paginação
+            $freteiros = $query->select(
+                'id', 'user_id', 'nome_fantasia', 'nome_completo',
+                'tipo_veiculo', 'cidade_base', 'avaliacao',
+                'quantidade_avaliacoes', 'foto_perfil'
+            )->paginate(10);
 
             return response()->json($freteiros);
         }
-        
+
+
 
     public function show($id)
         {
