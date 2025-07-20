@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ContactSent;
+
 
 class FreteiroProfile extends Model
 {
@@ -12,10 +14,10 @@ class FreteiroProfile extends Model
         protected $fillable = [
             'user_id',              // ✅ Adicione essa linha
             'nome_completo',
+            'whatsapp',
             'tipo_veiculo',
             'descricao',
             'cidade_base',
-            'wahtsapp',
             'avaliacao',
             'quantidade_avaliacoes',
             'foto_perfil',
@@ -25,6 +27,16 @@ class FreteiroProfile extends Model
         public function user()
         {
             return $this->belongsTo(User::class);
+        }
+
+        public function contatosRecebidos()
+        {
+            return $this->hasMany(ContactSent::class, 'freteiro_id');
+        }
+
+        public function atingiuLimiteContatos(): bool
+        {
+            return $this->contatosRecebidos()->count() >= $this->limite_contatos;
         }
     
 }
