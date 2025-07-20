@@ -13,17 +13,36 @@ class ContatoController extends Controller
     public function enviarContato($freteId, $freteiroId)
     {
         $frete = FreteRequest::findOrFail($freteId);
-        $freteiro = FreteiroProfile::with('user')->findOrFail($freteiroId);
+        $freteiro = FreteiroProfile::with(['user', 'contatosRecebidos'])->findOrFail($freteiroId);
         $userId = Auth::id();
 
-        // Registrar contato
+        // ✅ Verificar se o freteiro ainda pode receber contatos (com base em contatos registrados)
+        if ($freteiro->contatosRecebidos()->count() >= $freteiro->limite_contatos) {
+            return response()->json([
+                'erro' => 'Este freteiro atingiu o limite de contatos disponíveis no plano atual.'
+            ], 403);
+        }
+
+        // ✅ Verificar se esse cliente já enviou esse frete para esse freteiro
+        $contatoExistente = ContactSent::where('user_id', $userId)
+            ->where('frete_request_id', $frete->id)
+            ->where('freteiro_id', $freteiro->id)
+            ->exists();
+
+        if ($contatoExistente) {
+            return response()->json([
+                'erro' => 'Você já enviou este frete para este freteiro.'
+            ], 409);
+        }
+
+        // ✅ Registrar contato
         ContactSent::create([
             'user_id' => $userId,
             'frete_request_id' => $frete->id,
             'freteiro_id' => $freteiro->id,
         ]);
 
-        // Gerar mensagem automática
+        // ✅ Gerar mensagem automática
         $mensagem = "Olá, estou entrando em contato via FreteFácil!%0A"
             . "*Resumo do frete:*%0A"
             . "*Origem:* {$frete->origem}%0A"
@@ -33,11 +52,16 @@ class ContatoController extends Controller
             . "*Tem escada:* " . ($frete->tem_escada ? 'Sim' : 'Não') . "%0A"
             . "*Observações:* {$frete->observacoes}";
 
-        $numero = preg_replace('/[^0-9]/', '', $freteiro->user->email); // Substitua por campo correto, ex: $freteiro->whatsapp
+        // ✅ Obter número real de WhatsApp
+        $numeroWhatsApp = preg_replace('/[^0-9]/', '', $freteiro->whatsapp);
 
-        // Exemplo com número fixo se não tiver whatsapp no banco
-        $numeroWhatsApp = '5511999999999';
+        if (!$numeroWhatsApp) {
+            return response()->json([
+                'erro' => 'Freteiro sem número de WhatsApp cadastrado.'
+            ], 400);
+        }
 
+        // ✅ Criar link de redirecionamento para o WhatsApp
         $link = "https://wa.me/{$numeroWhatsApp}?text=" . urlencode($mensagem);
 
         return response()->json([
