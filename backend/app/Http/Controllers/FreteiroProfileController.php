@@ -129,4 +129,43 @@ class FreteiroProfileController extends Controller
 
         return response()->json($freteiro);
     }
+
+    public function dashboard(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            $profile = FreteiroProfile::withCount('contatosRecebidos')->where('user_id', $user->id)->first();
+
+            if (!$profile) {
+                return response()->json([
+                    'erro' => 'Perfil do freteiro não encontrado.'
+                ], 404);
+            }
+
+            // Cálculo dos contatos restantes com base no limite
+            $contatosRecebidos = $profile->contatos_recebidos_count;
+            $limiteContatos = $profile->limite_contatos;
+            $contatosRestantes = max($limiteContatos - $contatosRecebidos, 0);
+
+            return response()->json([
+                'nome_completo' => $profile->nome_completo,
+                'tipo_veiculo' => $profile->tipo_veiculo,
+                'cidade_base' => $profile->cidade_base,
+                'descricao' => $profile->descricao,
+                'contatos_recebidos' => $contatosRecebidos,
+                'contatos_restantes' => $contatosRestantes,
+                'limite_contatos' => $limiteContatos,
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'erro' => 'Erro ao carregar o painel do freteiro.',
+                'mensagem' => $e->getMessage(),
+                'arquivo' => $e->getFile(),
+                'linha' => $e->getLine()
+            ], 500);
+        }
+    }
+
 }

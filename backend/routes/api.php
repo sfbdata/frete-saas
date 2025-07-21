@@ -26,4 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Criar e atualizar perfil de freteiro
     Route::post('/freteiro-profile', [FreteiroProfileController::class, 'store']);
     Route::put('/freteiros/{id}',    [FreteiroProfileController::class, 'update']);
+
+    // Painel do freteiro
+    Route::get('/freteiro-profile/dashboard', [FreteiroProfileController::class, 'dashboard']);
 });
