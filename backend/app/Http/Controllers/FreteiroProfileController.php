@@ -87,29 +87,37 @@ class FreteiroProfileController extends Controller
 
     public function index(Request $request)
     {
-        $query = FreteiroProfile::with('user')
-            ->withCount('contatosRecebidos')
-            ->whereColumn('contatos_recebidos_count', '<', 'limite_contatos');
+        try {
+            $query = FreteiroProfile::with(['user', 'contatosRecebidos'])
+                ->withCount('contatosRecebidos')
+                ->having('contatos_recebidos_count', '<', \DB::raw('limite_contatos'));
 
-        if ($request->filled('tipo_veiculo')) {
-            $query->where('tipo_veiculo', 'like', '%' . $request->tipo_veiculo . '%');
+            if ($request->filled('tipo_veiculo')) {
+                $query->where('tipo_veiculo', 'like', '%' . $request->tipo_veiculo . '%');
+            }
+
+            if ($request->filled('cidade_base')) {
+                $query->where('cidade_base', 'like', '%' . $request->cidade_base . '%');
+            }
+
+            if ($request->filled('orderBy')) {
+                $orderField = in_array($request->orderBy, ['avaliacao', 'quantidade_avaliacoes']) ? $request->orderBy : 'avaliacao';
+                $orderDir = $request->get('orderDir', 'desc') === 'asc' ? 'asc' : 'desc';
+                $query->orderBy($orderField, $orderDir);
+            }
+
+            $perPage = $request->get('per_page', 10);
+
+            return response()->json($query->paginate($perPage));
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'erro' => 'Erro ao carregar os freteiros: ' . $e->getMessage(),
+                'arquivo' => $e->getFile(),
+                'linha' => $e->getLine()
+            ], 500);
         }
-
-        if ($request->filled('cidade_base')) {
-            $query->where('cidade_base', 'like', '%' . $request->cidade_base . '%');
-        }
-
-        if ($request->filled('orderBy')) {
-            $orderField = in_array($request->orderBy, ['avaliacao', 'quantidade_avaliacoes']) ? $request->orderBy : 'avaliacao';
-            $orderDir = $request->get('orderDir', 'desc') === 'asc' ? 'asc' : 'desc';
-            $query->orderBy($orderField, $orderDir);
-        }
-
-        $perPage = $request->get('per_page', 10);
-
-        return response()->json($query->paginate($perPage));
     }
-
 
     public function show($id)
     {

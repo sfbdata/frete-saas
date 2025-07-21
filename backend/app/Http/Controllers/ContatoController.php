@@ -17,7 +17,7 @@ class ContatoController extends Controller
         $userId = Auth::id();
 
         // ✅ Verificar se o freteiro ainda pode receber contatos (com base em contatos registrados)
-        if ($freteiro->contatosRecebidos()->count() >= $freteiro->limite_contatos) {
+        if ($freteiro->atingiuLimiteContatos()) {
             return response()->json([
                 'erro' => 'Este freteiro atingiu o limite de contatos disponíveis no plano atual.'
             ], 403);
@@ -40,6 +40,10 @@ class ContatoController extends Controller
             'user_id' => $userId,
             'frete_request_id' => $frete->id,
             'freteiro_id' => $freteiro->id,
+        ]);
+
+        $freteiro->update([
+            'contatos_enviados' => $freteiro->contatosRecebidos()->count(),
         ]);
 
         // ✅ Gerar mensagem automática

@@ -12,38 +12,47 @@ class FreteRequestController extends Controller
     public function store(Request $request)
     {
         try {
+            // ✅ Validação dos dados do frete
             $data = $request->validate([
-            'nome_cliente' => 'required|string|max:255',
-            'whatsapp_cliente' => 'required|string|max:15',
-            'origem' => 'required|string',
-            'destino' => 'required|string',
-            'tipo_caminhao' => 'required|string',
-            'precisa_ajudante' => 'nullable|boolean',
-            'tem_escada' => 'nullable|boolean',
-            'observacoes' => 'nullable|string',
-        ]);
+                'nome_cliente'      => 'required|string|max:255',
+                'whatsapp_cliente'  => 'required|string|max:15',
+                'origem'            => 'required|string',
+                'destino'           => 'required|string',
+                'tipo_caminhao'     => 'required|string',
+                'precisa_ajudante'  => 'nullable|boolean',
+                'tem_escada'        => 'nullable|boolean',
+                'observacoes'       => 'nullable|string',
+            ]);
 
-        $data['user_id'] = Auth::id();
+            // ✅ Associar o usuário logado, se houver (útil para rastreamento do frete)
+            $data['user_id'] = Auth::id();
 
-        $frete = FreteRequest::create($data);
+            // ✅ Criar a solicitação de frete
+            $frete = FreteRequest::create($data);
 
-        // (Por enquanto) retornar todos os freteiros cadastrados
-        $freteiros = FreteiroProfile::with('user')->take(10)->get();
+            // ✅ Buscar freteiros com limite de contatos não atingido
+            $freteiros = FreteiroProfile::with('user')
+                ->withCount('contatosRecebidos') // Adiciona contatos_recebidos_count
+                ->having('contatos_recebidos_count', '<', \DB::raw('limite_contatos'))
+                ->take(10)
+                ->get();
 
-        return response()->json([
-            'mensagem' => 'Solicitação registrada com sucesso.',
-            'frete' => $frete,
-            'freteiros_disponiveis' => $freteiros
-        ]);
-        } catch (\Throwable $th) {
+            // ✅ Resposta de sucesso com os freteiros disponíveis
             return response()->json([
-            'erro' => 'Erro ao registrar solicitação: ' . $th->getMessage(),
-            'mensagem' => $th->getMessage(),
-            'arquivo' => $th->getFile(),
-            'linha' => $th->getLine()
-        ], 500);
+                'mensagem' => 'Solicitação registrada com sucesso.',
+                'frete' => $frete,
+                'freteiros_disponiveis' => $freteiros
+            ]);
+
+        } catch (\Throwable $th) {
+            // 🛡️ Captura de qualquer erro com detalhes úteis para debug
+            return response()->json([
+                'erro'     => 'Erro ao registrar solicitação: ' . $th->getMessage(),
+                'mensagem' => $th->getMessage(),
+                'arquivo'  => $th->getFile(),
+                'linha'    => $th->getLine()
+            ], 500);
         }
-    
-        
     }
 }
+        
