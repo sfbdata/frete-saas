@@ -47,14 +47,15 @@ class ContatoController extends Controller
         ]);
 
         // ✅ Gerar mensagem automática
-        $mensagem = "Olá, estou entrando em contato via FreteFácil!%0A"
-            . "*Resumo do frete:*%0A"
-            . "*Origem:* {$frete->origem}%0A"
-            . "*Destino:* {$frete->destino}%0A"
-            . "*Tipo de caminhão:* {$frete->tipo_caminhao}%0A"
-            . "*Precisa ajudante:* " . ($frete->precisa_ajudante ? 'Sim' : 'Não') . "%0A"
-            . "*Tem escada:* " . ($frete->tem_escada ? 'Sim' : 'Não') . "%0A"
-            . "*Observações:* {$frete->observacoes}";
+        $mensagem = "Olá, estou entrando em contato via FreteFácil!\n"
+        . "*Resumo do frete:*\n"
+        . "*Origem:* {$frete->origem}\n"
+        . "*Destino:* {$frete->destino}\n"
+        . "*Tipo de caminhão:* {$frete->tipo_caminhao}\n"
+        . "*Precisa ajudante:* " . ($frete->precisa_ajudante ? 'Sim' : 'Não') . "\n"
+        . "*Tem escada:* " . ($frete->tem_escada ? 'Sim' : 'Não') . "\n"
+        . "*Observações:* {$frete->observacoes}";
+
 
         // ✅ Obter número real de WhatsApp
         $numeroWhatsApp = preg_replace('/[^0-9]/', '', $freteiro->whatsapp);
